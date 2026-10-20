@@ -1,0 +1,55 @@
+# Python / tooling
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Secrets / local config
+.env
+
+# Data (datasets are research-licensed: never commit them)
+data/raw/*
+data/processed/*
+data/samples/*
+!data/**/.gitkeep
+# Keep the internal test-set instructions (but never the media inside it).
+# Git can't re-include a file whose parent folder is excluded, so re-include the folders first.
+!data/raw/internal/
+data/raw/internal/**
+!data/raw/internal/*/
+!data/raw/internal/README.md
+!data/raw/internal/metadata_template.csv
+!data/raw/internal/**/.gitkeep
+*.db
+*.sqlite
+
+# Model weights and downloaded assets
+models/**/*.pt
+models/**/*.pth
+models/**/*.joblib
+models/**/*.tflite
+models/**/*.task
+models/**/*.onnx
+
+# Runtime output
+logs/
+reports/*
+!reports/.gitkeep
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# AI-assistant working files (kept locally, not published)
+CLAUDE.md
+.claude/
+docs/MASTER_PROMPT.md
+docs/CONTEXT.md
+docs/context/

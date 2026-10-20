@@ -1,0 +1,10 @@
+{
+  "input": "raw",
+  "dev_eer_threshold": 0.8048416972160339,
+  "dev_eer": 0.004000000000000002,
+  "eval_eer": 0.006677814938684502,
+  "n_dev": 3000,
+  "n_eval": 2995,
+  "measured_at": "2026-10-17T07:46:10.800409+00:00",
+  "device": "Apple Silicon GPU (MPS)"
+}

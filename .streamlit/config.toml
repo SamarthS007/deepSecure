@@ -1,0 +1,15 @@
+# Streamlit settings for DeepSecure (https://docs.streamlit.io/develop/api-reference/configuration/config.toml)
+[browser]
+gatherUsageStats = false   # don't send usage telemetry from a security project
+
+[server]
+maxUploadSize = 200        # MB; keep in sync with DEEPSECURE_MAX_UPLOAD_MB
+address = "localhost"      # listen on this computer only: not reachable from the Wi-Fi/LAN
+
+# DeepSecure blue for buttons, the current page and links; set per theme so the app still
+# follows the computer's light/dark setting (a plain [theme] section would force light).
+[theme.light]
+primaryColor = "#2a78d6"
+
+[theme.dark]
+primaryColor = "#3987e5"

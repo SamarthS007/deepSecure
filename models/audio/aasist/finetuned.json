@@ -1,0 +1,30 @@
+{
+  "sha256": "0863c5fa6c359447f20fb7bdb34df587f08efd065f971dbf8e214e1ddb8f46b7",
+  "base_weights": "clovaai/aasist@a04c9863f63d44471dde8a6abcb3b082b07cd1d1 (published AASIST.pth)",
+  "data_source": "ASVspoof 2019 LA train + In-the-Wild train (36 speakers), fine-tuned from the published AASIST",
+  "input": "raw",
+  "threshold": 0.5261441171169281,
+  "val_eer": 0.04666666666666665,
+  "val_eer_by_set": {
+    "in_the_wild_val": 0.06666666666666665,
+    "asvspoof_dev": 0.026666666666666644
+  },
+  "val_eer_published_model": {
+    "in_the_wild_val": 0.6416666666666666,
+    "asvspoof_dev": 0.005000000000000003
+  },
+  "epoch": 4,
+  "recipe": {
+    "epochs": 5,
+    "steps": 600,
+    "batch": 2,
+    "accum": 6,
+    "lr": 5e-05,
+    "val_per_class": 600,
+    "workers": 2,
+    "seed": 42,
+    "augmentation": "silence trim/pad, 8-12 kHz band-limit, mu-law, gain, noise",
+    "device": "Apple Silicon GPU (MPS)"
+  },
+  "trained_at": "2026-10-17T06:56:09.422820+00:00"
+}

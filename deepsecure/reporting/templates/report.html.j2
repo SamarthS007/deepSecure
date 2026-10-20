@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeepSecure report {{ r.report_id[:8] }}</title>
+<style>
+  :root { --ink:#0b0b0b; --ink2:#52514e; --line:#e4e3df; --bg:#fcfcfb;
+          --safe:#2e9e5b; --susp:#b87a14; --mal:#c23b3b; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:14px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width:880px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:16px; margin:28px 0 8px; }
+  .muted { color:var(--ink2); } .mono { font-family:ui-monospace, Menlo, monospace; font-size:12px; word-break:break-all; }
+  .banner { border-radius:8px; padding:14px 16px; margin:16px 0; border:1px solid var(--line); }
+  .banner b { font-size:20px; } .SAFE { border-left:6px solid var(--safe); }
+  .SUSPICIOUS { border-left:6px solid var(--susp); } .MALICIOUS { border-left:6px solid var(--mal); }
+  .demo { background:#fff6e0; border:1px solid #f0d48a; border-radius:8px; padding:10px 14px; }
+  .scroll { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; } th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-weight:600; color:var(--ink2); font-size:12px; text-transform:uppercase; letter-spacing:.03em; }
+  img { max-width:100%; height:auto; }
+  ol, ul { padding-left:20px; margin:4px 0; }
+  footer { margin-top:32px; font-size:12px; color:var(--ink2); border-top:1px solid var(--line); padding-top:12px; }
+  @media print { .scroll { overflow:visible; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>🛡️ DeepSecure analysis report</h1>
+  <div class="muted">Report <span class="mono">{{ r.report_id }}</span> · {{ r.created_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</div>
+
+  {% if r.demo_mode %}
+  <p class="demo"><b>Demo mode.</b> At least one detector has not been trained on deepfake data, so this verdict is a demonstration of the pipeline and must not be relied on.</p>
+  {% endif %}
+
+  <div class="banner {{ s.risk_level }}">
+    <b>{{ s.risk_level }}</b> · risk score {{ "%.1f"|format(s.risk_score) }} / 100 · confidence {{ "%.0f"|format(100 * f.confidence) }} %
+    <div class="muted">Fused fake probability {{ "%.3f"|format(f.fused_fake_prob) }} ({{ f.method }} fusion; coverage {{ "%.2f"|format(f.coverage) }}, agreement {{ "%.2f"|format(f.agreement) }})</div>
+  </div>
+  <img src="data:image/png;base64,{{ gauge_png }}" alt="Risk gauge: score {{ '%.0f'|format(s.risk_score) }}, level {{ s.risk_level }}">
+
+  <h2>Input</h2>
+  <div class="scroll"><table>
+    <tr><th>File</th><td>{{ i.original_name or i.path.name }}</td></tr>
+    <tr><th>Type</th><td>{{ i.media_type }} ({{ i.extension }}), {{ "{:,}".format(i.size_bytes) }} bytes{% if i.media_type != "image" %}, {{ "%.2f"|format(i.duration_s) }} s{% endif %}{% if i.width_px %}, {{ i.width_px }}×{{ i.height_px }} px{% endif %}</td></tr>
+    <tr><th>Audio track</th><td>{{ "yes" if i.has_audio_track else "no" }}</td></tr>
+    <tr><th>SHA-256</th><td class="mono">{{ i.sha256 }}</td></tr>
+    <tr><th>Attack fingerprint</th><td class="mono">{{ s.fingerprint }}</td></tr>
+  </table></div>
+
+  <h2>Detectors</h2>
+  <img src="data:image/png;base64,{{ bars_png }}" alt="Per-detector fake probabilities">
+  <div class="scroll"><table>
+    <tr><th>Detector</th><th>Fake prob.</th><th>Confidence</th><th>Weight</th><th>Status</th></tr>
+    {% for sc in f.modality_scores %}
+    <tr><td>{{ sc.name }}</td>
+      {% if sc.available %}
+      <td>{{ "%.3f"|format(sc.fake_prob) }}</td><td>{{ "%.2f"|format(sc.confidence) }}</td>
+      <td>{{ "%.2f"|format(f.weights_used.get(sc.name, 0)) }}</td>
+      <td>{{ "trained" if sc.trained else "untrained (demo)" }}</td>
+      {% else %}
+      <td colspan="3" class="muted">not available</td><td>{{ sc.reason }}</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table></div>
+
+  <h2>Security assessment</h2>
+  <p>Decision trail (how the level was reached):</p>
+  <ol>{% for step in s.decision_trail %}<li>{{ step }}</li>{% endfor %}</ol>
+  {% if s.anomaly_flag %}
+  <p><b>Anomalies</b> (score {{ "%.3f"|format(s.anomaly_score) }}):</p>
+  <ul>{% for reason in s.anomaly_reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+  {% else %}<p>No anomalies detected.</p>{% endif %}
+  <p>Other files with this attack fingerprint: {{ s.repeat_count }} · earlier analyses of this exact file: {{ s.file_seen_count }}</p>
+  {% if r.warnings %}
+  <p><b>Warnings</b></p><ul>{% for w in r.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+  {% endif %}
+
+  <h2>Processing time</h2>
+  <div class="scroll"><table>
+    <tr><th>Stage</th><th>ms</th></tr>
+    {% for stage, ms in r.stage_latency_ms.items() %}<tr><td>{{ stage }}</td><td>{{ "%.1f"|format(ms) }}</td></tr>{% endfor %}
+  </table></div>
+  <p class="muted">Device: {{ device }} · DeepSecure {{ version }}</p>
+
+  <footer>
+    <b>Disclaimer.</b> DeepSecure is a final-year student project. Its verdicts are probabilistic
+    and can be wrong in both directions; detectors trained on public datasets may not generalise
+    to new manipulation methods. Use this report as one input to a human decision, never as proof.
+    Verify urgent requests (payments, credentials) through a separate, trusted channel.
+  </footer>
+</main>
+</body>
+</html>

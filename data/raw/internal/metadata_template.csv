@@ -1,0 +1,5 @@
+filename,label,person,source,consent,collected_on,notes
+my_selfie_01.mp4,real,me,recorded on own phone,self,2026-10-20,indoor daylight
+friend_call_01.mp4,real,friend_a,recorded video call,written consent on file,2026-10-21,
+faceswap_demo_01.mp4,fake,friend_a,made with <tool> from friend_call_01 (with consent),written consent on file,2026-10-22,face swap
+voice_clone_01.wav,fake,me,cloned own voice with <tool>,self,2026-10-22,audio only
